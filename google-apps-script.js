@@ -1,10 +1,11 @@
-const SPREADSHEET_ID = "1rWtUkyuIwHDvtosZ9JZezIHuOvVN3eZi8RyOr9Y5nCc";
+const SPREADSHEET_ID = "1UnHAL5fSRHO7ahBFgG8L4uuwDoyt33OPDgJrSKHsow4";
 
 const SHEETS = {
   budget: "예산",
   expenses: "지출기록",
   summary: "월별요약",
   snapshot: "앱데이터",
+  snapshotBackup: "앱데이터백업",
 };
 
 function doPost(e) {
@@ -141,15 +142,41 @@ function appendEntry(payload) {
 }
 
 function saveSnapshot(snapshot) {
-  const sheet = getOrCreateSheet(SHEETS.snapshot, ["키", "데이터", "저장시간"]);
-  const json = JSON.stringify(snapshot || {});
-
-  if (sheet.getLastRow() >= 2) {
-    sheet.getRange(2, 1, 1, 3).setValues([["latest", json, new Date()]]);
+  if (!snapshotHasData(snapshot)) {
     return;
   }
 
-  sheet.appendRow(["latest", json, new Date()]);
+  const sheet = getOrCreateSheet(SHEETS.snapshot, ["키", "데이터", "저장시간"]);
+  const backupSheet = getOrCreateSheet(SHEETS.snapshotBackup, ["키", "데이터", "저장시간"]);
+  const json = JSON.stringify(snapshot || {});
+  const savedAt = new Date();
+
+  backupSheet.appendRow(["backup", json, savedAt]);
+
+  if (sheet.getLastRow() >= 2) {
+    sheet.getRange(2, 1, 1, 3).setValues([["latest", json, savedAt]]);
+    return;
+  }
+
+  sheet.appendRow(["latest", json, savedAt]);
+}
+
+function snapshotHasData(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") return false;
+  const months = snapshot.months || {};
+  const hasMonthData = Object.keys(months).some((monthKey) => {
+    const month = months[monthKey] || {};
+    const hasExpenses = (month.expenses || []).length > 0;
+    const hasIncomes = (month.incomes || []).length > 0;
+    const hasHeaven = (month.heaven || []).length > 0;
+    const itemGroups = month.items || {};
+    const hasBudget = Object.keys(itemGroups).some((categoryKey) =>
+      (itemGroups[categoryKey] || []).some((item) => item.name || Number(item.budget || 0) > 0),
+    );
+    return hasExpenses || hasIncomes || hasHeaven || hasBudget || Number(month.carryover || 0) > 0;
+  });
+
+  return hasMonthData || (snapshot.wishes || []).length > 0 || (snapshot.debts || []).length > 0;
 }
 
 function getSnapshot() {

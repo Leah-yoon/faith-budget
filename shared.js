@@ -553,16 +553,34 @@ const BudgetStore = (() => {
     };
   }
 
+  function snapshotHasData(snapshot) {
+    if (!snapshot || typeof snapshot !== "object") return false;
+    const months = snapshot.months || {};
+    const hasMonthData = Object.values(months).some((month) => {
+      if (!month || typeof month !== "object") return false;
+      const hasExpenses = (month.expenses || []).length > 0;
+      const hasIncomes = (month.incomes || []).length > 0;
+      const hasHeaven = (month.heaven || []).length > 0;
+      const hasBudget = Object.values(month.items || {}).some((items) =>
+        (items || []).some((item) => item.name || numberValue(item.budget) > 0),
+      );
+      return hasExpenses || hasIncomes || hasHeaven || hasBudget || numberValue(month.carryover) > 0;
+    });
+    return hasMonthData || (snapshot.wishes || []).length > 0 || (snapshot.debts || []).length > 0;
+  }
+
   function saveCloudSnapshot() {
     if (suppressCloudSync) return Promise.resolve(false);
     if (!cloudReady) {
       pendingCloudSnapshot = true;
       return Promise.resolve(false);
     }
+    const snapshot = getCloudSnapshot();
+    if (!snapshotHasData(snapshot)) return Promise.resolve(false);
     pendingCloudSnapshot = false;
     return postToSheet({
       type: "snapshot",
-      snapshot: getCloudSnapshot(),
+      snapshot,
     })
       .then((synced) => {
         if (synced) localStorage.setItem(CLOUD_SYNCED_AT_KEY, String(Date.now()));
@@ -614,6 +632,7 @@ const BudgetStore = (() => {
     const snapshot = payload && Object.prototype.hasOwnProperty.call(payload, "snapshot") ? payload.snapshot : payload;
     if (!snapshot || typeof snapshot !== "object") return false;
     if (!Object.prototype.hasOwnProperty.call(snapshot, "months")) return false;
+    if (!snapshotHasData(snapshot) && snapshotHasData(getCloudSnapshot())) return false;
 
     suppressCloudSync = true;
     try {
