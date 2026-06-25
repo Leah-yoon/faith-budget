@@ -522,7 +522,7 @@ const BudgetStore = (() => {
   }
 
   function getSheetUrl() {
-    return localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
+    return DEFAULT_SHEET_URL;
   }
 
   function setSheetUrl(url) {
