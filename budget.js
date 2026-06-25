@@ -164,7 +164,7 @@ function renderEditRow(category, item, index, items) {
   const titheButton = item.autoTitheType === "extra" ? renderTitheRateButton() : "";
 
   return `
-    <div class="table-row item-row" data-category="${category.id}" data-id="${item.id}" draggable="true">
+    <div class="table-row item-row" data-category="${category.id}" data-id="${item.id}">
       <label class="auto-item-name-wrap">
         <input class="item-name" type="text" value="${BudgetStore.escapeHtml(item.name)}" aria-label="${category.name} 항목 이름" ${nameReadonly} />
         <span>${autoLabel}${titheButton}</span>
@@ -174,6 +174,7 @@ function renderEditRow(category, item, index, items) {
         <input class="item-saving" type="checkbox" ${item.isSaving ? "checked" : ""} aria-label="${item.name || "항목"} 저축 표시" />
       </label>
       <div class="move-item-controls">
+        <span class="drag-item-handle" draggable="true" title="드래그로 순서 이동" aria-label="드래그로 순서 이동">↕</span>
         <button class="move-item-button" type="button" data-direction="-1" ${index === 0 ? "disabled" : ""} aria-label="${item.name || "항목"} 위로 이동">▲</button>
         <button class="move-item-button" type="button" data-direction="1" ${index === items.length - 1 ? "disabled" : ""} aria-label="${item.name || "항목"} 아래로 이동">▼</button>
       </div>
@@ -352,6 +353,7 @@ function bindEvents() {
 
   els.board.addEventListener("dragstart", (event) => {
     if (!state.isEditingBudget || isLocked()) return;
+    if (!event.target.classList.contains("drag-item-handle")) return;
     const row = event.target.closest(".item-row");
     if (!row) return;
     state.draggingItem = { categoryId: row.dataset.category, itemId: row.dataset.id };

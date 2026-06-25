@@ -6,6 +6,8 @@ const SHEETS = {
   summary: "월별요약",
   snapshot: "앱데이터",
   snapshotBackup: "앱데이터백업",
+  monthlyReport: "월별결산",
+  debtReport: "빚갚기진행",
 };
 
 function doPost(e) {
@@ -25,6 +27,10 @@ function doPost(e) {
 
   if (payload.type === "snapshot") {
     saveSnapshot(payload.snapshot || {});
+  }
+
+  if (payload.type === "monthlyReport") {
+    saveMonthlyReport(payload.report || {});
   }
 
   return ContentService
@@ -139,6 +145,69 @@ function appendEntry(payload) {
     payload.user || "나",
     new Date(),
   ]);
+}
+
+function saveMonthlyReport(report) {
+  const month = report.month || "";
+  const savedAt = new Date();
+  const summarySheet = getOrCreateSheet(SHEETS.monthlyReport, [
+    "월",
+    "구분",
+    "항목",
+    "예산",
+    "금액",
+    "메모",
+    "저장시간",
+  ]);
+  const debtSheet = getOrCreateSheet(SHEETS.debtReport, [
+    "월",
+    "구분",
+    "항목",
+    "총액",
+    "갚음/모음",
+    "남은금액",
+    "진행률",
+    "저장시간",
+  ]);
+
+  deleteMonthRows(summarySheet, month);
+  deleteMonthRows(debtSheet, month);
+
+  (report.summaryRows || []).forEach((row) => {
+    summarySheet.appendRow([
+      month,
+      row.section || "",
+      row.label || "",
+      Number(row.budget || 0),
+      Number(row.amount || 0),
+      row.memo || "",
+      savedAt,
+    ]);
+  });
+
+  (report.debtRows || []).forEach((row) => {
+    debtSheet.appendRow([
+      month,
+      row.kind || "",
+      row.label || "",
+      Number(row.total || 0),
+      Number(row.paid || 0),
+      Number(row.remaining || 0),
+      `${Number(row.progress || 0)}%`,
+      savedAt,
+    ]);
+  });
+}
+
+function deleteMonthRows(sheet, month) {
+  const lastRow = sheet.getLastRow();
+  if (!month || lastRow <= 1) return;
+  const months = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  for (let index = months.length - 1; index >= 0; index -= 1) {
+    if (months[index][0] === month) {
+      sheet.deleteRow(index + 2);
+    }
+  }
 }
 
 function saveSnapshot(snapshot) {

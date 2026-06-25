@@ -526,10 +526,6 @@ select:focus {
   cursor: default;
 }
 
-.item-row[draggable="true"] {
-  cursor: grab;
-}
-
 .item-row.is-dragging {
   opacity: 0.48;
 }
@@ -538,6 +534,25 @@ select:focus {
   outline: 2px dashed rgba(108, 143, 209, 0.58);
   outline-offset: -3px;
   background: rgba(108, 143, 209, 0.08);
+}
+
+.drag-item-handle,
+.drag-plan-handle {
+  display: inline-grid;
+  place-items: center;
+  min-height: 22px;
+  border-radius: 7px;
+  background: rgba(45, 63, 88, 0.08);
+  color: rgba(45, 63, 88, 0.62);
+  cursor: grab;
+  font-size: 12px;
+  font-weight: 900;
+  user-select: none;
+}
+
+.drag-item-handle:active,
+.drag-plan-handle:active {
+  cursor: grabbing;
 }
 
 .saving-summary-card {
@@ -2091,6 +2106,30 @@ select:focus {
   padding-top: 28px;
 }
 
+.closing-export-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 0 16px;
+}
+
+.closing-export-actions button {
+  min-height: 38px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 8px 14px;
+}
+
+.closing-export-actions p {
+  margin: 0 0 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .closing-hero {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -3298,7 +3337,7 @@ select:focus {
 }
 
 .debt-plan-draggable {
-  cursor: grab;
+  position: relative;
 }
 
 .debt-plan-draggable.is-dragging {
@@ -3308,6 +3347,11 @@ select:focus {
 .debt-plan-draggable.is-drag-over {
   outline: 2px dashed rgba(95, 143, 104, 0.58);
   outline-offset: -4px;
+}
+
+.drag-plan-handle {
+  width: 28px;
+  margin: 0 auto 4px;
 }
 
 .debt-progress {
@@ -3414,6 +3458,15 @@ select:focus {
   .wish-list,
   .debt-layout {
     grid-template-columns: 1fr;
+  }
+
+  .closing-export-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .closing-export-actions p {
+    margin-left: 0;
   }
 
   .wish-summary-panel,

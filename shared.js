@@ -766,6 +766,13 @@ const BudgetStore = (() => {
     });
   }
 
+  function syncMonthlyReport(report) {
+    return postToSheet({
+      type: "monthlyReport",
+      report,
+    });
+  }
+
   return {
     categories,
     copyMonthInto,
@@ -804,5 +811,6 @@ const BudgetStore = (() => {
     syncBudget,
     syncEntry,
     syncExpense,
+    syncMonthlyReport,
   };
 })();

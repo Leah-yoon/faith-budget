@@ -22,6 +22,9 @@ const els = {
   sixMonthChart: document.querySelector("#sixMonthChart"),
   fulfilledWishTotal: document.querySelector("#fulfilledWishTotal"),
   fulfilledWishList: document.querySelector("#fulfilledWishList"),
+  saveMonthlyReport: document.querySelector("#saveMonthlyReportButton"),
+  downloadMonthlyReport: document.querySelector("#downloadMonthlyReportButton"),
+  saveStatus: document.querySelector("#closingSaveStatus"),
 };
 
 function loadCurrentMonth() {
@@ -161,6 +164,107 @@ function renderFulfilledWishes() {
             `,
           )
           .join("");
+}
+
+function buildMonthlyReport() {
+  const totals = BudgetStore.getTotals(state.data);
+  const incomeRows = getIncomeRows();
+  const expenseRows = getExpenseRowsByCategory();
+  const heavenRows = getHeavenRows();
+  const debtRows = getDebtRows();
+  const incomeTotal = incomeRows.reduce((total, row) => total + BudgetStore.numberValue(row.amount), 0);
+  const heavenSown = heavenRows[0]?.amount || 0;
+  const heavenHarvest = heavenRows[1]?.amount || 0;
+
+  const summaryRows = [
+    { section: "요약", label: "총 수입", amount: incomeTotal },
+    { section: "요약", label: "총 지출", amount: totals.totalSpent },
+    { section: "요약", label: "남은 예산", amount: totals.remaining },
+    { section: "요약", label: "하늘은행 심은 기록", amount: heavenSown },
+    { section: "요약", label: "하늘은행 거둔 기록", amount: heavenHarvest },
+    ...incomeRows.map((row) => ({
+      section: "수입",
+      label: row.label,
+      amount: row.amount,
+      memo: row.date || "",
+    })),
+    ...expenseRows.map((row) => ({
+      section: "지출",
+      label: row.label,
+      budget: row.budget,
+      amount: row.amount,
+      memo: `남은 예산 ${BudgetStore.formatWon(row.budget - row.amount)}`,
+    })),
+    ...heavenRows.map((row) => ({
+      section: "하늘은행통장",
+      label: row.label,
+      amount: row.amount,
+      memo: `${row.count || 0}건`,
+    })),
+  ];
+
+  return {
+    month: state.month,
+    summaryRows,
+    debtRows,
+  };
+}
+
+function escapeCsv(value) {
+  return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+function downloadMonthlyReport() {
+  const report = buildMonthlyReport();
+  const summaryHeader = ["월", "구분", "항목", "예산", "금액", "메모"];
+  const debtHeader = ["월", "구분", "항목", "총액", "갚음/모음", "남은금액", "진행률"];
+  const lines = [
+    ["월별결산"],
+    summaryHeader,
+    ...report.summaryRows.map((row) => [
+      report.month,
+      row.section || "",
+      row.label || "",
+      row.budget || 0,
+      row.amount || 0,
+      row.memo || "",
+    ]),
+    [],
+    ["빚갚기진행"],
+    debtHeader,
+    ...report.debtRows.map((row) => [
+      report.month,
+      row.kind === "debt" ? "부채" : "적금",
+      row.label || "",
+      row.total || 0,
+      row.paid || 0,
+      row.remaining || 0,
+      `${row.progress || 0}%`,
+    ]),
+  ];
+  const csv = `\ufeff${lines.map((line) => line.map(escapeCsv).join(",")).join("\r\n")}`;
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `믿음의예산안_${report.month}_결산.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  if (els.saveStatus) els.saveStatus.textContent = "엑셀용 파일을 내려받았어요";
+}
+
+function saveMonthlyReportToSheet() {
+  const report = buildMonthlyReport();
+  if (els.saveStatus) els.saveStatus.textContent = "구글시트에 표 저장 중...";
+  BudgetStore.syncMonthlyReport(report)
+    .then((synced) => {
+      if (els.saveStatus) els.saveStatus.textContent = synced ? "월별결산/빚갚기진행 표 저장됨" : "저장 주소를 확인해 주세요";
+    })
+    .catch(() => {
+      if (els.saveStatus) els.saveStatus.textContent = "표 저장 실패";
+    });
 }
 
 function getPreviousMonth(month) {
@@ -357,6 +461,14 @@ els.month.addEventListener("change", () => {
   loadCurrentMonth();
   render();
 });
+
+if (els.saveMonthlyReport) {
+  els.saveMonthlyReport.addEventListener("click", saveMonthlyReportToSheet);
+}
+
+if (els.downloadMonthlyReport) {
+  els.downloadMonthlyReport.addEventListener("click", downloadMonthlyReport);
+}
 
 loadCurrentMonth();
 render();

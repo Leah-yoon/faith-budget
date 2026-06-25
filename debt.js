@@ -195,8 +195,9 @@ function renderExecutionTable() {
   const planHeaders = state.plans
     .map(
       (plan, index) => `
-        <th colspan="2" class="${plan.kind} debt-plan-draggable" draggable="true" data-plan-id="${plan.id}">
+        <th colspan="2" class="${plan.kind} debt-plan-draggable" data-plan-id="${plan.id}">
           <div class="debt-table-title">
+            <span class="drag-plan-handle" draggable="true" title="드래그로 순서 이동" aria-label="드래그로 순서 이동">↔</span>
             <span>${plan.kind === "debt" ? "부채" : "적금"}</span>
             <strong>${BudgetStore.escapeHtml(plan.name)}</strong>
             <small>
@@ -387,6 +388,7 @@ els.list.addEventListener("click", (event) => {
 
 els.list.addEventListener("dragstart", (event) => {
   if (isLocked()) return;
+  if (!event.target.classList.contains("drag-plan-handle")) return;
   const header = event.target.closest(".debt-plan-draggable");
   if (!header) return;
   state.draggingPlanId = header.dataset.planId;
