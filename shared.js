@@ -3,7 +3,7 @@ const BudgetStore = (() => {
   const SHEET_URL_KEY = "faith-budget-sheet-url";
   const WISH_STORAGE_KEY = "faith-budget-wishes-v1";
   const DEBT_STORAGE_KEY = "faith-budget-debt-plans-v1";
-  const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbyFg2mpUmaBZsQsIlY7DmHQZTsQjcEG-G74f__7i0Izh1KkgSJdNU7EosHsP6OF57rBCA/exec";
+  const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbycvhYGy4NH9V0WlRVXuadXB2FGhXzuBGa-ZPsm-TTGstkWYMh_XJfMCm1Y0M6Gl043/exec";
   let suppressCloudSync = false;
   let cloudSyncTimer = null;
   let cloudReady = false;
