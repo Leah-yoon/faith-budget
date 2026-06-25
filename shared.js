@@ -8,7 +8,7 @@ const BudgetStore = (() => {
   let suppressCloudSync = false;
   let cloudSyncTimer = null;
   let cloudReady = false;
-  const CLOUD_REFRESH_INTERVAL = 45000;
+  let pendingCloudSnapshot = false;
 
   const categories = [
     {
@@ -554,7 +554,12 @@ const BudgetStore = (() => {
   }
 
   function saveCloudSnapshot() {
-    if (suppressCloudSync || !cloudReady) return Promise.resolve(false);
+    if (suppressCloudSync) return Promise.resolve(false);
+    if (!cloudReady) {
+      pendingCloudSnapshot = true;
+      return Promise.resolve(false);
+    }
+    pendingCloudSnapshot = false;
     return postToSheet({
       type: "snapshot",
       snapshot: getCloudSnapshot(),
@@ -567,7 +572,11 @@ const BudgetStore = (() => {
   }
 
   function queueCloudSnapshot() {
-    if (suppressCloudSync || !cloudReady) return;
+    if (suppressCloudSync) return;
+    if (!cloudReady) {
+      pendingCloudSnapshot = true;
+      return;
+    }
     window.clearTimeout(cloudSyncTimer);
     cloudSyncTimer = window.setTimeout(saveCloudSnapshot, 450);
   }
@@ -618,13 +627,7 @@ const BudgetStore = (() => {
     return true;
   }
 
-  function refreshFromCloud(options = {}) {
-    const lastSyncedAt = Number(localStorage.getItem(CLOUD_SYNCED_AT_KEY) || 0);
-    if (!options.force && lastSyncedAt && Date.now() - lastSyncedAt < CLOUD_REFRESH_INTERVAL) {
-      cloudReady = true;
-      return Promise.resolve(false);
-    }
-
+  function refreshFromCloud() {
     return loadCloudSnapshot()
       .then((payload) => {
         const applied = applyCloudSnapshot(payload);
@@ -637,6 +640,7 @@ const BudgetStore = (() => {
       .catch(() => false)
       .finally(() => {
         cloudReady = true;
+        if (pendingCloudSnapshot) saveCloudSnapshot();
       });
   }
 
