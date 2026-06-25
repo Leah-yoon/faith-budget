@@ -488,7 +488,7 @@ select:focus {
 
 .move-item-controls {
   display: grid;
-  gap: 5px;
+  place-items: center;
 }
 
 .move-item-button {
@@ -3146,12 +3146,12 @@ select:focus {
 
 .debt-table-title {
   display: grid;
-  grid-template-columns: 72px 1fr 92px;
+  grid-template-columns: 30px minmax(46px, 1fr) auto;
   grid-template-areas:
-    "kind . actions"
+    "drag kind actions"
     "name name name"
     "meta meta meta";
-  gap: 2px 8px;
+  gap: 5px 8px;
   align-items: center;
   min-width: 240px;
   text-align: center;
@@ -3164,17 +3164,19 @@ select:focus {
   font-weight: 800;
 }
 
-.debt-table-title span {
+.debt-table-title .debt-plan-kind {
   grid-area: kind;
   justify-self: start;
+  min-width: 42px;
 }
 
 .debt-table-title strong {
   grid-area: name;
   font-family: "Nanum Pen Script", "Gaegu", cursive;
-  font-size: 38px;
+  font-size: 34px;
   font-weight: 400;
-  line-height: 1;
+  line-height: 0.95;
+  overflow-wrap: anywhere;
 }
 
 .debt-table-title small {
@@ -3193,7 +3195,7 @@ select:focus {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 4px;
-  max-width: 92px;
+  max-width: 64px;
 }
 
 .debt-execution-table td {
@@ -3285,7 +3287,6 @@ select:focus {
   line-height: 1;
 }
 
-.move-plan-button,
 .edit-plan-button,
 .remove-plan-button {
   display: inline-flex;
@@ -3302,26 +3303,9 @@ select:focus {
   padding: 0 8px;
 }
 
-.move-plan-button {
-  min-width: 24px;
-  padding: 0 6px;
-  background: rgba(95, 143, 104, 0.1);
-  color: rgba(61, 109, 72, 0.76);
-}
-
 .edit-plan-button {
   background: rgba(154, 100, 43, 0.08);
   color: rgba(123, 77, 33, 0.7);
-}
-
-.move-plan-button:disabled {
-  opacity: 0.26;
-  cursor: default;
-}
-
-.move-plan-button:not(:disabled):hover,
-.move-plan-button:not(:disabled):focus-visible {
-  background: rgba(95, 143, 104, 0.18);
 }
 
 .edit-plan-button:hover,
@@ -3350,8 +3334,9 @@ select:focus {
 }
 
 .drag-plan-handle {
+  grid-area: drag;
   width: 28px;
-  margin: 0 auto 4px;
+  margin: 0;
 }
 
 .debt-progress {

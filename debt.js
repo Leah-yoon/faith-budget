@@ -16,6 +16,7 @@ const els = {
   dueDate: document.querySelector("#debtDueDate"),
   submit: document.querySelector("#submitDebtPlanButton"),
   cancelEdit: document.querySelector("#cancelDebtEditButton"),
+  deletePlan: document.querySelector("#deleteDebtPlanButton"),
   list: document.querySelector("#debtPlanList"),
   overview: document.querySelector("#debtOverview"),
   debtRemainingTotal: document.querySelector("#debtRemainingTotal"),
@@ -119,6 +120,7 @@ function resetPlanForm() {
   els.formSummary.textContent = "계획 추가";
   els.submit.textContent = "실행서에 추가";
   els.cancelEdit.hidden = true;
+  els.deletePlan.hidden = true;
 }
 
 function startEditPlan(plan) {
@@ -132,6 +134,7 @@ function startEditPlan(plan) {
   els.formSummary.textContent = "계획 수정";
   els.submit.textContent = "수정 저장";
   els.cancelEdit.hidden = false;
+  els.deletePlan.hidden = false;
   els.addPanel.open = true;
   els.name.focus();
 }
@@ -194,11 +197,11 @@ function renderExecutionTable() {
   const months = getAllMonths();
   const planHeaders = state.plans
     .map(
-      (plan, index) => `
+      (plan) => `
         <th colspan="2" class="${plan.kind} debt-plan-draggable" data-plan-id="${plan.id}">
           <div class="debt-table-title">
             <span class="drag-plan-handle" draggable="true" title="드래그로 순서 이동" aria-label="드래그로 순서 이동">↔</span>
-            <span>${plan.kind === "debt" ? "부채" : "적금"}</span>
+            <span class="debt-plan-kind">${plan.kind === "debt" ? "부채" : "적금"}</span>
             <strong>${BudgetStore.escapeHtml(plan.name)}</strong>
             <small>
               ${BudgetStore.formatWon(plan.total)}
@@ -206,8 +209,6 @@ function renderExecutionTable() {
               ${plan.requiredMonthly ? ` · 이자: 월 ${BudgetStore.formatWon(plan.requiredMonthly)}` : " · 이자 없음"}
             </small>
             <div class="debt-plan-actions">
-              <button class="move-plan-button" type="button" data-plan-id="${plan.id}" data-direction="-1" ${index === 0 ? "disabled" : ""} aria-label="${plan.name} 앞으로 이동">◀</button>
-              <button class="move-plan-button" type="button" data-plan-id="${plan.id}" data-direction="1" ${index === state.plans.length - 1 ? "disabled" : ""} aria-label="${plan.name} 뒤로 이동">▶</button>
               <button class="edit-plan-button" type="button" data-plan-id="${plan.id}" aria-label="${plan.name} 수정">수정</button>
             </div>
           </div>
@@ -216,7 +217,7 @@ function renderExecutionTable() {
     )
     .join("");
   const subHeaders = state.plans
-    .map(() => `<th>넣을/갚을 금액</th><th>남은 금액</th>`)
+    .map(() => `<th>넣은/갚은 금액</th><th>남은 금액</th>`)
     .join("");
   const bodyRows = months.map((month, index) => renderMonthRow(month, index)).join("");
 
@@ -345,6 +346,17 @@ els.form.addEventListener("submit", (event) => {
 
 els.cancelEdit.addEventListener("click", resetPlanForm);
 
+els.deletePlan.addEventListener("click", () => {
+  if (isLocked() || !state.editingPlanId) return;
+  const plan = state.plans.find((item) => item.id === state.editingPlanId);
+  if (!plan) return;
+  if (!confirm(`"${plan.name}" 계획을 삭제할까요? 입력한 진행 기록도 같이 삭제돼요.`)) return;
+  state.plans = state.plans.filter((item) => item.id !== state.editingPlanId);
+  resetPlanForm();
+  savePlans();
+  render();
+});
+
 els.list.addEventListener("change", (event) => {
   if (isLocked()) return;
   const planId = event.target.dataset.planId;
@@ -368,17 +380,6 @@ els.list.addEventListener("change", (event) => {
 
 els.list.addEventListener("click", (event) => {
   if (isLocked()) return;
-  if (event.target.classList.contains("move-plan-button")) {
-    const index = state.plans.findIndex((item) => item.id === event.target.dataset.planId);
-    const nextIndex = index + Number(event.target.dataset.direction || 0);
-    if (index < 0 || nextIndex < 0 || nextIndex >= state.plans.length) return;
-    const [plan] = state.plans.splice(index, 1);
-    state.plans.splice(nextIndex, 0, plan);
-    savePlans();
-    render();
-    return;
-  }
-
   if (event.target.classList.contains("edit-plan-button")) {
     const plan = state.plans.find((item) => item.id === event.target.dataset.planId);
     if (!plan) return;

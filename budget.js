@@ -175,8 +175,6 @@ function renderEditRow(category, item, index, items) {
       </label>
       <div class="move-item-controls">
         <span class="drag-item-handle" draggable="true" title="드래그로 순서 이동" aria-label="드래그로 순서 이동">↕</span>
-        <button class="move-item-button" type="button" data-direction="-1" ${index === 0 ? "disabled" : ""} aria-label="${item.name || "항목"} 위로 이동">▲</button>
-        <button class="move-item-button" type="button" data-direction="1" ${index === items.length - 1 ? "disabled" : ""} aria-label="${item.name || "항목"} 아래로 이동">▼</button>
       </div>
       ${item.autoDebtPlanId || item.autoTitheType ? "<span></span>" : `<button class="remove-item-button" type="button" aria-label="항목 삭제">×</button>`}
     </div>
