@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>믿음의 예산안 - 결산</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="budget-app closing-page" data-chart-months="6">
+      <header class="page-header">
+        <div>
+          <h1>월간 결산</h1>
+        </div>
+        <a class="home-link desktop-home-link" href="desktop.html">홈</a>
+        <label class="month-control" for="closingMonth">
+          결산 월
+          <input id="closingMonth" type="month" />
+        </label>
+      </header>
+
+      <section class="closing-panel closing-chart-panel" aria-labelledby="sixMonthChartTitle">
+        <div class="closing-panel-head">
+          <h2 id="sixMonthChartTitle">6개월 흐름</h2>
+          <strong>수입 / 지출</strong>
+        </div>
+        <div id="sixMonthChart" class="six-month-chart"></div>
+      </section>
+
+      <section class="closing-panel closing-wish-panel" aria-labelledby="fulfilledWishTitle">
+        <div class="closing-panel-head">
+          <h2 id="fulfilledWishTitle">올해의 결실</h2>
+          <strong id="fulfilledWishTotal">0원</strong>
+        </div>
+        <div id="fulfilledWishList" class="fulfilled-wish-list"></div>
+      </section>
+
+      <section class="closing-hero" aria-label="월간 결산 핵심 요약">
+        <div>
+          <span>총 수입</span>
+          <strong id="closingIncomeText">0원</strong>
+        </div>
+        <div>
+          <span>총 지출</span>
+          <strong id="closingSpentText">0원</strong>
+        </div>
+        <div>
+          <span>남은 예산</span>
+          <strong id="closingRemainingText">0원</strong>
+        </div>
+        <div>
+          <span>하늘은행</span>
+          <strong id="closingHeavenText">0원</strong>
+        </div>
+        <div>
+          <span>빚갚기</span>
+          <strong id="closingDebtText">0원</strong>
+        </div>
+      </section>
+
+      <section class="closing-grid" aria-label="상세 결산">
+        <article class="closing-panel">
+          <div class="closing-panel-head">
+            <h2>수입</h2>
+            <strong id="incomePanelTotal">0원</strong>
+          </div>
+          <div id="incomeBreakdown" class="closing-list"></div>
+        </article>
+
+        <article class="closing-panel">
+          <div class="closing-panel-head">
+            <h2>지출</h2>
+            <strong id="expensePanelTotal">0원</strong>
+          </div>
+          <div id="expenseBreakdown" class="closing-list"></div>
+        </article>
+
+        <article class="closing-panel">
+          <div class="closing-panel-head">
+            <h2>하늘은행통장</h2>
+            <strong id="heavenPanelTotal">0원</strong>
+          </div>
+          <div id="heavenBreakdown" class="closing-list"></div>
+        </article>
+
+        <article class="closing-panel">
+          <div class="closing-panel-head">
+            <h2>빚갚기</h2>
+            <strong id="debtPanelTotal">0원</strong>
+          </div>
+          <div id="debtBreakdown" class="closing-list"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="closing.js"></script>
+  </body>
+</html>

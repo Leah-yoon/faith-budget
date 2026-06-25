@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>믿음의 예산안 - 빚갚기</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="budget-app debt-page">
+      <header class="page-header">
+        <div>
+          <h1>부채상환 실행서</h1>
+        </div>
+        <a class="home-link desktop-home-link debt-home-link" href="desktop.html">홈</a>
+      </header>
+
+      <section class="debt-summary-panel" aria-label="부채와 적금 요약">
+        <div class="summary-box debt-total">
+          <span>부채 잔액</span>
+          <strong id="debtRemainingTotal">0원</strong>
+        </div>
+        <div class="summary-box interest-total">
+          <span>이번 달 이자</span>
+          <strong id="requiredThisMonthTotal">0원</strong>
+        </div>
+        <div class="summary-box saving-total">
+          <span>적금 목표</span>
+          <strong id="savingTargetTotal">0원</strong>
+        </div>
+      </section>
+
+      <section id="debtOverview" class="debt-overview" aria-label="부채와 적금 한눈 요약"></section>
+      <section id="debtPlanList" class="debt-plan-list" aria-label="부채상환 실행 목록"></section>
+
+      <details id="debtAddPanel" class="debt-add-panel">
+        <summary id="debtFormSummary">계획 추가</summary>
+        <form id="debtPlanForm" class="debt-plan-form" aria-label="부채 또는 적금 계획 추가">
+          <label>
+            구분
+            <select id="debtKind">
+              <option value="debt">부채</option>
+              <option value="saving">적금</option>
+            </select>
+          </label>
+          <label>
+            내용
+            <input id="debtName" type="text" placeholder="예: 카드빚, 보증금, 여행자금" required />
+          </label>
+          <label>
+            총 금액
+            <input id="debtTotal" type="number" min="0" inputmode="numeric" placeholder="예: 3000000" required />
+          </label>
+          <label>
+            매달 이자
+            <input id="debtRequired" type="number" min="0" inputmode="numeric" placeholder="예: 20000" />
+          </label>
+          <label>
+            시작 월
+            <input id="debtStartMonth" type="month" required />
+          </label>
+          <label>
+            필요한 날짜
+            <input id="debtDueDate" type="date" />
+          </label>
+          <div class="debt-form-actions">
+            <button id="submitDebtPlanButton" type="submit">실행서에 추가</button>
+            <button id="cancelDebtEditButton" class="secondary-button" type="button" hidden>수정 취소</button>
+          </div>
+        </form>
+      </details>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="debt.js"></script>
+  </body>
+</html>

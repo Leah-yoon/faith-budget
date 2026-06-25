@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>믿음의 예산안 - 하늘은행통장</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="budget-app expense-page expense-entry-page heaven-entry-page">
+      <header class="entry-page-header heaven-header">
+        <a class="home-link note-home-link" href="expense.html">홈</a>
+        <div>
+          <h1 class="note-title heaven-title">하늘은행통장</h1>
+          <p class="bank-subtitle">심고 거둠 예금</p>
+        </div>
+        <label class="month-control" for="budgetMonth">
+          기록 월
+          <input id="budgetMonth" type="month" />
+        </label>
+      </header>
+
+      <section class="heaven-tabs" aria-label="하늘은행통장 기록 종류">
+        <button class="heaven-tab active" type="button" data-mode="sown">심은 기록</button>
+        <button class="heaven-tab" type="button" data-mode="harvest">거둔 기록</button>
+      </section>
+
+      <section class="quick-entry note-entry heaven-entry-form" aria-labelledby="heavenEntryTitle">
+        <h2 id="heavenEntryTitle" class="sr-only">하늘은행통장 기록 추가</h2>
+        <form id="heavenForm" class="expense-form">
+          <label>
+            날짜
+            <input id="heavenDate" type="date" required />
+          </label>
+          <label>
+            내용
+            <input id="heavenMemo" type="text" placeholder="예: 하나님께서 말씀하신 곳" required />
+          </label>
+          <label>
+            형태
+            <span class="asset-type-tabs" role="group" aria-label="하늘은행 형태 선택">
+              <button class="asset-type-tab active" type="button" data-asset-type="현금">현금</button>
+              <button class="asset-type-tab" type="button" data-asset-type="현물">현물</button>
+              <button class="asset-type-tab" type="button" data-asset-type="서비스">서비스</button>
+            </span>
+            <input id="heavenAssetType" type="hidden" value="현금" />
+          </label>
+          <label>
+            금액
+            <input id="heavenAmount" type="number" min="0" inputmode="numeric" placeholder="예: 25000" required />
+          </label>
+          <button id="submitHeavenButton" type="submit">심은 기록 추가</button>
+        </form>
+      </section>
+
+      <section class="expense-log note-log heaven-mobile-log" aria-labelledby="heavenLogTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">기록</p>
+            <h2 id="heavenLogTitle">최근 입력</h2>
+          </div>
+          <strong id="heavenCountText">0건</strong>
+        </div>
+        <div id="heavenRecentList" class="expense-list"></div>
+      </section>
+
+      <section class="mobile-status-panel" aria-label="저장 상태">
+        <p id="saveStatus" class="mobile-status" role="status">자동 저장됨</p>
+      </section>
+      <input id="sheetUrlInput" type="hidden" />
+      <button id="saveSheetUrlButton" class="hidden-control" type="button">저장</button>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="heaven.js"></script>
+  </body>
+</html>

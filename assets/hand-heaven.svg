@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 140" role="img" aria-label="하늘은행통장">
+  <defs>
+    <filter id="softPencil">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="21" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.7"/>
+    </filter>
+  </defs>
+  <rect width="520" height="140" fill="none"/>
+  <text x="60" y="82" fill="#28313c" font-family="'Gowun Batang', 'Hahmlet', 'Nanum Myeongjo', serif" font-size="47" font-weight="700" letter-spacing="-0.5" filter="url(#softPencil)">하늘은행통장</text>
+  <path d="M58 101 C138 96, 244 103, 438 98" fill="none" stroke="#6f91d6" stroke-width="3.2" stroke-linecap="round" opacity="0.76" filter="url(#softPencil)"/>
+  <text x="450" y="91" fill="#d49a57" font-family="'Gowun Batang', 'Hahmlet', serif" font-size="34" font-weight="700" transform="rotate(13 450 91)" opacity="0.9" filter="url(#softPencil)">*</text>
+</svg>

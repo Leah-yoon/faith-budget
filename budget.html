@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>믿음의 예산안 - 예산 짜기</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="budget-app budget-page">
+      <header class="page-header">
+        <div>
+          <h1>월간 예산 짜기</h1>
+        </div>
+        <a class="home-link desktop-home-link" href="desktop.html">홈</a>
+        <label class="month-control" for="budgetMonth">
+          작성 월
+          <input id="budgetMonth" type="month" />
+        </label>
+      </header>
+
+      <section class="summary-panel" aria-label="월간 요약">
+        <div class="summary-card">
+          <span>총 수입</span>
+          <strong id="totalIncomeText">0원</strong>
+        </div>
+        <div class="summary-card">
+          <span>예산 합계</span>
+          <strong id="totalBudgetText">0원</strong>
+        </div>
+        <div class="summary-card">
+          <span>지출 총액</span>
+          <strong id="totalSpentText">0원</strong>
+        </div>
+        <div class="summary-card balance">
+          <span>남은 예산</span>
+          <strong id="remainingText">0원</strong>
+        </div>
+        <div class="summary-card saving-summary-card">
+          <span>저축 비율</span>
+          <strong id="savingBudgetText">0원 · 0%</strong>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="예산 도구">
+        <button id="toggleBudgetEditButton" type="button">예산 수정</button>
+        <button id="toggleClosingLockButton" type="button">결산 저장</button>
+        <button id="syncBudgetButton" class="secondary-button" type="button">구글시트 저장</button>
+        <button id="resetMonthButton" class="secondary-button danger-button" type="button">이번 달 비우기</button>
+        <button id="copyPreviousMonthButton" class="secondary-button" type="button">가져오기</button>
+        <div class="budget-flow-inputs">
+          <label>
+            지난달 이월 금액
+            <input id="carryoverInput" type="number" min="0" inputmode="numeric" />
+          </label>
+          <label>
+            이번 달 수입
+            <input id="incomeInput" type="text" readonly />
+          </label>
+        </div>
+        <p id="saveStatus" role="status">자동 저장됨</p>
+      </section>
+
+      <section class="budget-board" aria-label="분류별 예산"></section>
+
+      <section class="heaven-ledger desktop-heaven-ledger" aria-label="하늘은행통장 장부">
+        <div class="ledger-topline">
+          <span id="desktopLedgerPeriodText"></span>
+          <strong>하늘은행 통장</strong>
+        </div>
+        <div class="ledger-table">
+          <div class="ledger-half">
+            <div class="ledger-heading">
+              <span>날짜</span>
+              <span>입금내용<br />하나님께 말씀하신 곳</span>
+              <span>금액</span>
+              <span>잔액</span>
+            </div>
+            <div id="desktopSownList" class="ledger-body"></div>
+          </div>
+          <div class="ledger-half">
+            <div class="ledger-heading">
+              <span>날짜</span>
+              <span>출금내용<br />하나님이 공급하신 것</span>
+              <span>금액</span>
+              <span>잔액</span>
+            </div>
+            <div id="desktopHarvestList" class="ledger-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <input id="sheetUrlInput" type="hidden" />
+      <button id="saveSheetUrlButton" class="hidden-control" type="button">연결 주소 저장</button>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="budget.js"></script>
+  </body>
+</html>

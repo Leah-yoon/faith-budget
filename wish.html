@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>믿음의 예산안 - 요망사항</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="budget-app wish-page">
+      <header class="page-header">
+        <div>
+          <h1>요망사항</h1>
+        </div>
+        <a class="home-link desktop-home-link wish-home-link" href="desktop.html">홈</a>
+      </header>
+
+      <section class="wish-summary-panel" aria-label="요망사항 요약">
+        <div>
+          <span>목표 합계</span>
+          <strong id="wishTargetTotal">0원</strong>
+        </div>
+        <div>
+          <span>모은 금액</span>
+          <strong id="wishSavedTotal">0원</strong>
+        </div>
+        <div>
+          <span>결실</span>
+          <strong id="wishFulfilledCount">0개</strong>
+        </div>
+      </section>
+
+      <section id="wishList" class="wish-list" aria-label="요망사항 목록"></section>
+
+      <details class="wish-add-panel">
+        <summary>요망사항 추가</summary>
+        <form id="wishForm" class="wish-form" aria-label="요망사항 추가">
+          <h2>담아두기</h2>
+          <label>
+            요망사항
+            <input id="wishName" type="text" placeholder="예: 새 가방, 여행, 노트북" required />
+          </label>
+          <label>
+            목표 금액
+            <input id="wishTarget" type="number" min="0" inputmode="numeric" placeholder="예: 300000" required />
+          </label>
+          <label>
+            담은 날짜
+            <input id="wishStartDate" type="date" required />
+          </label>
+          <label>
+            목표기일
+            <input id="wishDueDate" type="date" />
+          </label>
+          <label>
+            메모
+            <input id="wishNote" type="text" placeholder="왜 원하는지, 어떤 마음인지" />
+          </label>
+          <button type="submit">요망사항 추가</button>
+        </form>
+      </details>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="wish.js"></script>
+  </body>
+</html>

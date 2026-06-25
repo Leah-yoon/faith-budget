@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>믿음의 예산안 - 지출 기록</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="budget-app expense-page expense-entry-page">
+      <header class="entry-page-header">
+        <a class="home-link note-home-link" href="expense.html">홈</a>
+        <div>
+          <h1 class="note-title">지출</h1>
+        </div>
+        <label class="month-control" for="budgetMonth">
+          기록 월
+          <input id="budgetMonth" type="month" />
+        </label>
+      </header>
+
+      <section class="quick-entry note-entry" aria-labelledby="quickEntryTitle">
+        <h2 id="quickEntryTitle" class="sr-only">지출 추가</h2>
+        <form id="expenseForm" class="expense-form">
+          <label>
+            날짜
+            <input id="expenseDate" type="date" required />
+          </label>
+          <label class="category-field">
+            분류
+            <select id="expenseCategory" required></select>
+          </label>
+          <label class="item-field">
+            항목
+            <select id="expenseItem"></select>
+            <span id="itemBudgetHint" class="item-budget-hint">항목을 선택하면 남은 예산이 보여요.</span>
+          </label>
+          <label>
+            금액
+            <input id="expenseAmount" type="number" min="0" inputmode="numeric" placeholder="예: 12000" required />
+          </label>
+          <label class="memo-field">
+            메모
+            <input id="expenseMemo" type="text" placeholder="예: 점심, 교통비, 선물" />
+          </label>
+          <button id="submitEntryButton" type="submit">지출 추가</button>
+        </form>
+      </section>
+
+      <section class="summary-panel compact-summary" aria-label="월간 요약">
+        <div class="summary-card">
+          <span>이번 달 예산</span>
+          <strong id="totalBudgetText">0원</strong>
+        </div>
+        <div class="summary-card">
+          <span>쓴 금액</span>
+          <strong id="totalSpentText">0원</strong>
+        </div>
+        <div class="summary-card balance">
+          <span>남은 예산</span>
+          <strong id="remainingText">0원</strong>
+        </div>
+      </section>
+
+      <section class="expense-log note-log" aria-labelledby="expenseLogTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">기록</p>
+            <h2 id="expenseLogTitle">최근 입력</h2>
+          </div>
+          <strong id="expenseCountText">0건</strong>
+        </div>
+        <div id="expenseList" class="expense-list"></div>
+      </section>
+
+      <section class="mobile-status-panel" aria-label="저장 상태">
+        <p id="saveStatus" class="mobile-status" role="status">자동 저장됨</p>
+      </section>
+      <input id="sheetUrlInput" type="hidden" />
+      <button id="saveSheetUrlButton" class="hidden-control" type="button">저장</button>
+    </main>
+
+    <script src="shared.js"></script>
+    <script src="expense.js"></script>
+  </body>
+</html>
