@@ -3568,6 +3568,11 @@ select:focus {
     border-radius: 8px;
   }
 
+  .expense-entry-page .quick-entry {
+    position: static;
+    z-index: auto;
+  }
+
   .budget-page .quick-entry {
     position: static;
     margin-inline: 0;
