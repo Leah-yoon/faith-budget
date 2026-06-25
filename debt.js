@@ -376,3 +376,9 @@ els.list.addEventListener("click", (event) => {
 
 resetPlanForm();
 render();
+BudgetStore.refreshFromCloud().then((updated) => {
+  if (!updated) return;
+  state.plans = BudgetStore.loadDebtPlans();
+  resetPlanForm();
+  render();
+});

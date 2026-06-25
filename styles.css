@@ -3518,8 +3518,35 @@ select:focus {
 
 @media (max-width: 640px) {
   .budget-app {
-    width: min(100% - 24px, 1440px);
-    padding-top: 18px;
+    width: min(100% - 60px, 1440px);
+    padding-top: 20px;
+  }
+
+  .landing-app,
+  .expense-page {
+    width: min(100% - 72px, 390px);
+  }
+
+  .expense-entry-page {
+    padding-top: 22px;
+  }
+
+  .expense-entry-page .entry-page-header,
+  .expense-entry-page .month-control,
+  .expense-entry-page .quick-entry,
+  .expense-entry-page .summary-panel,
+  .expense-entry-page .expense-log,
+  .expense-entry-page .heaven-tabs,
+  .expense-entry-page .mobile-status-panel {
+    padding-inline: 8px;
+  }
+
+  .expense-entry-page .note-title {
+    font-size: clamp(50px, 15vw, 70px);
+  }
+
+  .heaven-entry-page .note-title {
+    font-size: clamp(38px, 11vw, 54px);
   }
 
   .page-header,
@@ -3537,8 +3564,8 @@ select:focus {
     position: sticky;
     top: 0;
     z-index: 2;
-    margin-inline: -12px;
-    border-radius: 0 0 8px 8px;
+    margin-inline: 0;
+    border-radius: 8px;
   }
 
   .budget-page .quick-entry {
@@ -3572,5 +3599,36 @@ select:focus {
   .expense-row {
     grid-template-columns: 72px 1fr 86px 34px;
     gap: 8px;
+  }
+
+  .expense-entry-page .expense-row {
+    grid-template-columns: 42px minmax(0, 1fr) 68px 30px;
+    gap: 5px;
+    padding: 11px 6px;
+  }
+
+  .expense-entry-page .expense-row.is-editing-entry {
+    grid-template-columns: 38px minmax(0, 1fr) 64px 52px;
+  }
+
+  .expense-entry-page .section-head {
+    padding-inline: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .landing-app,
+  .expense-page {
+    width: min(100% - 52px, 360px);
+  }
+
+  .expense-entry-page .entry-page-header,
+  .expense-entry-page .month-control,
+  .expense-entry-page .quick-entry,
+  .expense-entry-page .summary-panel,
+  .expense-entry-page .expense-log,
+  .expense-entry-page .heaven-tabs,
+  .expense-entry-page .mobile-status-panel {
+    padding-inline: 6px;
   }
 }

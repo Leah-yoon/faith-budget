@@ -203,3 +203,9 @@ loadCurrentMonth();
 els.date.value = BudgetStore.getToday();
 bindEvents();
 render();
+BudgetStore.refreshFromCloud().then((updated) => {
+  if (!updated) return;
+  loadCurrentMonth();
+  render();
+  els.saveStatus.textContent = "구글시트에서 불러옴";
+});

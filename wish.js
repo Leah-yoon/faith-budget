@@ -289,3 +289,8 @@ els.list.addEventListener("click", (event) => {
 
 els.startDate.value = today();
 render();
+BudgetStore.refreshFromCloud().then((updated) => {
+  if (!updated) return;
+  state.wishes = BudgetStore.loadWishes();
+  render();
+});

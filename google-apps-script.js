@@ -4,6 +4,7 @@ const SHEETS = {
   budget: "예산",
   expenses: "지출기록",
   summary: "월별요약",
+  snapshot: "앱데이터",
 };
 
 function doPost(e) {
@@ -21,6 +22,10 @@ function doPost(e) {
     saveBudget(payload);
   }
 
+  if (payload.type === "snapshot") {
+    saveSnapshot(payload.snapshot || {});
+  }
+
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
@@ -31,6 +36,10 @@ function doGet(e) {
 
   if (params.type === "budget") {
     return jsonp(params.callback, getBudget(params.month || ""));
+  }
+
+  if (params.type === "snapshot") {
+    return jsonp(params.callback, getSnapshot());
   }
 
   return jsonp(params.callback, { ok: true });
@@ -129,6 +138,33 @@ function appendEntry(payload) {
     payload.user || "나",
     new Date(),
   ]);
+}
+
+function saveSnapshot(snapshot) {
+  const sheet = getOrCreateSheet(SHEETS.snapshot, ["키", "데이터", "저장시간"]);
+  const json = JSON.stringify(snapshot || {});
+
+  if (sheet.getLastRow() >= 2) {
+    sheet.getRange(2, 1, 1, 3).setValues([["latest", json, new Date()]]);
+    return;
+  }
+
+  sheet.appendRow(["latest", json, new Date()]);
+}
+
+function getSnapshot() {
+  const sheet = getOrCreateSheet(SHEETS.snapshot, ["키", "데이터", "저장시간"]);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return { ok: true, snapshot: null };
+  }
+
+  const json = sheet.getRange(2, 2).getValue();
+  try {
+    return { ok: true, snapshot: JSON.parse(json || "null") };
+  } catch (error) {
+    return { ok: false, snapshot: null, error: "snapshot parse failed" };
+  }
 }
 
 function getOrCreateSheet(name, header) {

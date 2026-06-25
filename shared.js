@@ -3,7 +3,10 @@ const BudgetStore = (() => {
   const SHEET_URL_KEY = "faith-budget-sheet-url";
   const WISH_STORAGE_KEY = "faith-budget-wishes-v1";
   const DEBT_STORAGE_KEY = "faith-budget-debt-plans-v1";
-  const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbxQdlYIbDAJZj8syweURmT1BhJFIh7eRsI9yiPTb2Z9Na4ztlp_65YIiv7mRz4kjstn4g/exec";
+  const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbyFg2mpUmaBZsQsIlY7DmHQZTsQjcEG-G74f__7i0Izh1KkgSJdNU7EosHsP6OF57rBCA/exec";
+  let suppressCloudSync = false;
+  let cloudSyncTimer = null;
+  let cloudReady = false;
 
   const categories = [
     {
@@ -71,6 +74,7 @@ const BudgetStore = (() => {
 
   function saveAllMonths(allMonths) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(allMonths));
+    queueCloudSnapshot();
   }
 
   function loadWishes() {
@@ -83,6 +87,7 @@ const BudgetStore = (() => {
 
   function saveWishes(wishes) {
     localStorage.setItem(WISH_STORAGE_KEY, JSON.stringify(wishes));
+    queueCloudSnapshot();
   }
 
   function loadDebtPlans() {
@@ -96,6 +101,7 @@ const BudgetStore = (() => {
   function saveDebtPlans(plans) {
     localStorage.setItem(DEBT_STORAGE_KEY, JSON.stringify(plans));
     syncDebtPlansToStoredMonths();
+    queueCloudSnapshot();
   }
 
   function setDebtRequiredPaid(planId, month, paid, requiredAmount) {
@@ -109,6 +115,7 @@ const BudgetStore = (() => {
       plan.records[month].requiredAmount = numberValue(requiredAmount);
     }
     localStorage.setItem(DEBT_STORAGE_KEY, JSON.stringify(plans));
+    queueCloudSnapshot();
   }
 
   function getPreviousMonth(month) {
@@ -534,6 +541,91 @@ const BudgetStore = (() => {
     }).then(() => true);
   }
 
+  function getCloudSnapshot() {
+    return {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      months: loadAllMonths(),
+      wishes: loadWishes(),
+      debts: loadDebtPlans(),
+    };
+  }
+
+  function saveCloudSnapshot() {
+    if (suppressCloudSync || !cloudReady) return Promise.resolve(false);
+    return postToSheet({
+      type: "snapshot",
+      snapshot: getCloudSnapshot(),
+    }).catch(() => false);
+  }
+
+  function queueCloudSnapshot() {
+    if (suppressCloudSync || !cloudReady) return;
+    window.clearTimeout(cloudSyncTimer);
+    cloudSyncTimer = window.setTimeout(saveCloudSnapshot, 450);
+  }
+
+  function loadCloudSnapshot() {
+    const sheetUrl = getSheetUrl();
+    if (!sheetUrl) return Promise.resolve(null);
+
+    return new Promise((resolve, reject) => {
+      const callbackName = `faithBudgetSnapshot_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      const script = document.createElement("script");
+      const separator = sheetUrl.includes("?") ? "&" : "?";
+
+      window[callbackName] = (payload) => {
+        cleanup();
+        resolve(payload);
+      };
+
+      function cleanup() {
+        delete window[callbackName];
+        script.remove();
+      }
+
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("Budget snapshot load failed"));
+      };
+
+      script.src = `${sheetUrl}${separator}type=snapshot&callback=${encodeURIComponent(callbackName)}`;
+      document.body.appendChild(script);
+    });
+  }
+
+  function applyCloudSnapshot(payload) {
+    const snapshot = payload && Object.prototype.hasOwnProperty.call(payload, "snapshot") ? payload.snapshot : payload;
+    if (!snapshot || typeof snapshot !== "object") return false;
+    if (!Object.prototype.hasOwnProperty.call(snapshot, "months")) return false;
+
+    suppressCloudSync = true;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot.months || {}));
+      localStorage.setItem(WISH_STORAGE_KEY, JSON.stringify(snapshot.wishes || []));
+      localStorage.setItem(DEBT_STORAGE_KEY, JSON.stringify(snapshot.debts || []));
+    } finally {
+      suppressCloudSync = false;
+    }
+    return true;
+  }
+
+  function refreshFromCloud() {
+    return loadCloudSnapshot()
+      .then((payload) => {
+        const applied = applyCloudSnapshot(payload);
+        if (!applied && payload?.ok && payload.snapshot === null) {
+          cloudReady = true;
+          saveCloudSnapshot();
+        }
+        return applied;
+      })
+      .catch(() => false)
+      .finally(() => {
+        cloudReady = true;
+      });
+  }
+
   function loadBudgetFromSheet(month) {
     const sheetUrl = getSheetUrl();
     if (!sheetUrl) return Promise.resolve(null);
@@ -651,10 +743,13 @@ const BudgetStore = (() => {
     getSheetUrl,
     getToday,
     getTotals,
+    refreshFromCloud,
     loadAllMonths,
+    loadCloudSnapshot,
     loadWishes,
     loadDebtPlans,
     applyBudgetRows,
+    applyCloudSnapshot,
     addWishDepositFromExpense,
     loadBudgetFromSheet,
     loadMonth,
@@ -668,6 +763,7 @@ const BudgetStore = (() => {
     syncWishItems,
     removeWishDepositFromExpense,
     setSheetUrl,
+    saveCloudSnapshot,
     syncBudget,
     syncEntry,
     syncExpense,

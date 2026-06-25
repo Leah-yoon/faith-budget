@@ -360,3 +360,8 @@ els.month.addEventListener("change", () => {
 
 loadCurrentMonth();
 render();
+BudgetStore.refreshFromCloud().then((updated) => {
+  if (!updated) return;
+  loadCurrentMonth();
+  render();
+});
