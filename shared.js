@@ -1,12 +1,14 @@
 const BudgetStore = (() => {
   const STORAGE_KEY = "faith-budget-app-v2";
   const SHEET_URL_KEY = "faith-budget-sheet-url";
+  const CLOUD_SYNCED_AT_KEY = "faith-budget-cloud-synced-at";
   const WISH_STORAGE_KEY = "faith-budget-wishes-v1";
   const DEBT_STORAGE_KEY = "faith-budget-debt-plans-v1";
   const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbycvhYGy4NH9V0WlRVXuadXB2FGhXzuBGa-ZPsm-TTGstkWYMh_XJfMCm1Y0M6Gl043/exec";
   let suppressCloudSync = false;
   let cloudSyncTimer = null;
   let cloudReady = false;
+  const CLOUD_REFRESH_INTERVAL = 45000;
 
   const categories = [
     {
@@ -556,7 +558,12 @@ const BudgetStore = (() => {
     return postToSheet({
       type: "snapshot",
       snapshot: getCloudSnapshot(),
-    }).catch(() => false);
+    })
+      .then((synced) => {
+        if (synced) localStorage.setItem(CLOUD_SYNCED_AT_KEY, String(Date.now()));
+        return synced;
+      })
+      .catch(() => false);
   }
 
   function queueCloudSnapshot() {
@@ -604,13 +611,20 @@ const BudgetStore = (() => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot.months || {}));
       localStorage.setItem(WISH_STORAGE_KEY, JSON.stringify(snapshot.wishes || []));
       localStorage.setItem(DEBT_STORAGE_KEY, JSON.stringify(snapshot.debts || []));
+      localStorage.setItem(CLOUD_SYNCED_AT_KEY, String(Date.now()));
     } finally {
       suppressCloudSync = false;
     }
     return true;
   }
 
-  function refreshFromCloud() {
+  function refreshFromCloud(options = {}) {
+    const lastSyncedAt = Number(localStorage.getItem(CLOUD_SYNCED_AT_KEY) || 0);
+    if (!options.force && lastSyncedAt && Date.now() - lastSyncedAt < CLOUD_REFRESH_INTERVAL) {
+      cloudReady = true;
+      return Promise.resolve(false);
+    }
+
     return loadCloudSnapshot()
       .then((payload) => {
         const applied = applyCloudSnapshot(payload);
