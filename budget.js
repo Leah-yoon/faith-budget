@@ -2,6 +2,7 @@ const state = {
   month: BudgetStore.getCurrentMonth(),
   data: null,
   isEditingBudget: false,
+  draggingItem: null,
 };
 
 const els = {
@@ -163,7 +164,7 @@ function renderEditRow(category, item, index, items) {
   const titheButton = item.autoTitheType === "extra" ? renderTitheRateButton() : "";
 
   return `
-    <div class="table-row item-row" data-category="${category.id}" data-id="${item.id}">
+    <div class="table-row item-row" data-category="${category.id}" data-id="${item.id}" draggable="true">
       <label class="auto-item-name-wrap">
         <input class="item-name" type="text" value="${BudgetStore.escapeHtml(item.name)}" aria-label="${category.name} 항목 이름" ${nameReadonly} />
         <span>${autoLabel}${titheButton}</span>
@@ -179,6 +180,17 @@ function renderEditRow(category, item, index, items) {
       ${item.autoDebtPlanId || item.autoTitheType ? "<span></span>" : `<button class="remove-item-button" type="button" aria-label="항목 삭제">×</button>`}
     </div>
   `;
+}
+
+function moveBudgetItem(categoryId, itemId, targetId) {
+  if (!categoryId || !itemId || !targetId || itemId === targetId) return false;
+  const items = state.data.items[categoryId] || [];
+  const currentIndex = items.findIndex((item) => item.id === itemId);
+  const targetIndex = items.findIndex((item) => item.id === targetId);
+  if (currentIndex < 0 || targetIndex < 0) return false;
+  const [item] = items.splice(currentIndex, 1);
+  items.splice(targetIndex, 0, item);
+  return true;
 }
 
 function render() {
@@ -337,6 +349,47 @@ function bindEvents() {
   });
 
   els.board.addEventListener("change", render);
+
+  els.board.addEventListener("dragstart", (event) => {
+    if (!state.isEditingBudget || isLocked()) return;
+    const row = event.target.closest(".item-row");
+    if (!row) return;
+    state.draggingItem = { categoryId: row.dataset.category, itemId: row.dataset.id };
+    row.classList.add("is-dragging");
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", row.dataset.id);
+  });
+
+  els.board.addEventListener("dragover", (event) => {
+    if (!state.draggingItem) return;
+    const row = event.target.closest(".item-row");
+    if (!row || row.dataset.category !== state.draggingItem.categoryId) return;
+    event.preventDefault();
+    row.classList.add("is-drag-over");
+  });
+
+  els.board.addEventListener("dragleave", (event) => {
+    const row = event.target.closest(".item-row");
+    if (row) row.classList.remove("is-drag-over");
+  });
+
+  els.board.addEventListener("drop", (event) => {
+    if (!state.draggingItem) return;
+    const row = event.target.closest(".item-row");
+    if (!row || row.dataset.category !== state.draggingItem.categoryId) return;
+    event.preventDefault();
+    if (moveBudgetItem(state.draggingItem.categoryId, state.draggingItem.itemId, row.dataset.id)) {
+      save("항목 순서 저장됨");
+      render();
+    }
+  });
+
+  els.board.addEventListener("dragend", () => {
+    state.draggingItem = null;
+    els.board.querySelectorAll(".is-dragging, .is-drag-over").forEach((row) => {
+      row.classList.remove("is-dragging", "is-drag-over");
+    });
+  });
 
   els.resetMonth.addEventListener("click", () => {
     if (isLocked()) return;

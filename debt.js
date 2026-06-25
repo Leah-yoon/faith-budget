@@ -1,6 +1,7 @@
 const state = {
   plans: BudgetStore.loadDebtPlans(),
   editingPlanId: null,
+  draggingPlanId: null,
 };
 
 const els = {
@@ -194,7 +195,7 @@ function renderExecutionTable() {
   const planHeaders = state.plans
     .map(
       (plan, index) => `
-        <th colspan="2" class="${plan.kind}">
+        <th colspan="2" class="${plan.kind} debt-plan-draggable" draggable="true" data-plan-id="${plan.id}">
           <div class="debt-table-title">
             <span>${plan.kind === "debt" ? "부채" : "적금"}</span>
             <strong>${BudgetStore.escapeHtml(plan.name)}</strong>
@@ -303,6 +304,16 @@ function render() {
   renderPlans();
 }
 
+function movePlanBefore(planId, targetPlanId) {
+  if (!planId || !targetPlanId || planId === targetPlanId) return false;
+  const currentIndex = state.plans.findIndex((item) => item.id === planId);
+  const targetIndex = state.plans.findIndex((item) => item.id === targetPlanId);
+  if (currentIndex < 0 || targetIndex < 0) return false;
+  const [plan] = state.plans.splice(currentIndex, 1);
+  state.plans.splice(targetIndex, 0, plan);
+  return true;
+}
+
 els.form.addEventListener("submit", (event) => {
   event.preventDefault();
   if (isLocked()) return;
@@ -372,6 +383,47 @@ els.list.addEventListener("click", (event) => {
     if (!plan) return;
     startEditPlan(plan);
   }
+});
+
+els.list.addEventListener("dragstart", (event) => {
+  if (isLocked()) return;
+  const header = event.target.closest(".debt-plan-draggable");
+  if (!header) return;
+  state.draggingPlanId = header.dataset.planId;
+  header.classList.add("is-dragging");
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", header.dataset.planId);
+});
+
+els.list.addEventListener("dragover", (event) => {
+  if (!state.draggingPlanId) return;
+  const header = event.target.closest(".debt-plan-draggable");
+  if (!header) return;
+  event.preventDefault();
+  header.classList.add("is-drag-over");
+});
+
+els.list.addEventListener("dragleave", (event) => {
+  const header = event.target.closest(".debt-plan-draggable");
+  if (header) header.classList.remove("is-drag-over");
+});
+
+els.list.addEventListener("drop", (event) => {
+  if (!state.draggingPlanId) return;
+  const header = event.target.closest(".debt-plan-draggable");
+  if (!header) return;
+  event.preventDefault();
+  if (movePlanBefore(state.draggingPlanId, header.dataset.planId)) {
+    savePlans();
+    render();
+  }
+});
+
+els.list.addEventListener("dragend", () => {
+  state.draggingPlanId = null;
+  els.list.querySelectorAll(".is-dragging, .is-drag-over").forEach((item) => {
+    item.classList.remove("is-dragging", "is-drag-over");
+  });
 });
 
 resetPlanForm();

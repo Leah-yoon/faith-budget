@@ -526,6 +526,20 @@ select:focus {
   cursor: default;
 }
 
+.item-row[draggable="true"] {
+  cursor: grab;
+}
+
+.item-row.is-dragging {
+  opacity: 0.48;
+}
+
+.item-row.is-drag-over {
+  outline: 2px dashed rgba(108, 143, 209, 0.58);
+  outline-offset: -3px;
+  background: rgba(108, 143, 209, 0.08);
+}
+
 .saving-summary-card {
   border-color: rgba(95, 143, 104, 0.22);
   background: rgba(95, 143, 104, 0.08);
@@ -3281,6 +3295,19 @@ select:focus {
 .remove-plan-button:focus-visible {
   background: rgba(180, 68, 52, 0.1);
   color: var(--danger);
+}
+
+.debt-plan-draggable {
+  cursor: grab;
+}
+
+.debt-plan-draggable.is-dragging {
+  opacity: 0.5;
+}
+
+.debt-plan-draggable.is-drag-over {
+  outline: 2px dashed rgba(95, 143, 104, 0.58);
+  outline-offset: -4px;
 }
 
 .debt-progress {
