@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>믿음의 예산안 - 빚갚기</title>
-    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="styles.css?v=12" />
   </head>
   <body>
     <main class="budget-app debt-page">
@@ -56,6 +56,15 @@
             <input id="debtRequired" type="number" min="0" inputmode="numeric" placeholder="예: 20000" />
           </label>
           <label>
+            예산 위치
+            <select id="debtBudgetCategory">
+              <option value="obligation">의무사항</option>
+              <option value="need">필요사항</option>
+              <option value="sow">심고거둠</option>
+              <option value="wish">요망사항</option>
+            </select>
+          </label>
+          <label>
             시작 월
             <input id="debtStartMonth" type="month" required />
           </label>
@@ -72,10 +81,11 @@
       </details>
     </main>
 
-    <script src="shared.js?v=11"></script>
-    <script src="debt.js?v=11"></script>
+    <script src="shared.js?v=12"></script>
+    <script src="debt.js?v=12"></script>
   </body>
 </html>
+
 
 
 

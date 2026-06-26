@@ -3236,7 +3236,7 @@ select:focus {
 
 .payment-input-wrap {
   display: grid;
-  grid-template-columns: auto minmax(84px, 1fr);
+  grid-template-columns: auto minmax(84px, 1fr) auto;
   align-items: center;
   gap: 7px;
 }
@@ -3244,6 +3244,16 @@ select:focus {
 .payment-input-wrap input[type="checkbox"] {
   width: auto;
   min-height: auto;
+}
+
+.budget-include-wrap {
+  display: inline-grid;
+  justify-items: center;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .inactive-cell {

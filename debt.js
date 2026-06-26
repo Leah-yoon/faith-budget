@@ -12,6 +12,7 @@ const els = {
   name: document.querySelector("#debtName"),
   total: document.querySelector("#debtTotal"),
   required: document.querySelector("#debtRequired"),
+  budgetCategory: document.querySelector("#debtBudgetCategory"),
   startMonth: document.querySelector("#debtStartMonth"),
   dueDate: document.querySelector("#debtDueDate"),
   submit: document.querySelector("#submitDebtPlanButton"),
@@ -62,9 +63,12 @@ function isPlanActiveInMonth(plan, month) {
 
 function getRecord(plan, month) {
   plan.records = plan.records || {};
-  plan.records[month] = plan.records[month] || { requiredPaid: false, requiredAmount: plan.requiredMonthly || 0, amount: 0 };
+  plan.records[month] = plan.records[month] || { requiredPaid: false, requiredAmount: plan.requiredMonthly || 0, amount: 0, includeInBudget: true };
   if (plan.records[month].requiredAmount === undefined) {
     plan.records[month].requiredAmount = plan.requiredMonthly || 0;
+  }
+  if (plan.records[month].includeInBudget === undefined) {
+    plan.records[month].includeInBudget = true;
   }
   return plan.records[month];
 }
@@ -116,6 +120,7 @@ function renderLockState() {
 function resetPlanForm() {
   state.editingPlanId = null;
   els.form.reset();
+  els.budgetCategory.value = "obligation";
   els.startMonth.value = currentMonth();
   els.formSummary.textContent = "계획 추가";
   els.submit.textContent = "실행서에 추가";
@@ -129,6 +134,7 @@ function startEditPlan(plan) {
   els.name.value = plan.name || "";
   els.total.value = plan.total || "";
   els.required.value = plan.requiredMonthly || "";
+  els.budgetCategory.value = plan.budgetCategory || (plan.kind === "debt" ? "obligation" : "need");
   els.startMonth.value = plan.startMonth || currentMonth();
   els.dueDate.value = plan.dueDate || "";
   els.formSummary.textContent = "계획 수정";
@@ -286,6 +292,10 @@ function renderMonthRow(month, index) {
           <label class="payment-input-wrap">
             <input class="required-paid-input" data-plan-id="${plan.id}" data-month="${month}" type="checkbox" ${record.requiredPaid ? "checked" : ""} />
             <input class="month-paid-input" data-plan-id="${plan.id}" data-month="${month}" type="number" min="0" inputmode="numeric" value="${record.amount || ""}" aria-label="${plan.name} ${month} 실행금액" />
+            <span class="budget-include-wrap">
+              <input class="budget-include-input" data-plan-id="${plan.id}" data-month="${month}" type="checkbox" ${record.includeInBudget === false ? "" : "checked"} aria-label="${plan.name} ${month} 예산 반영" />
+              <small>예산</small>
+            </span>
           </label>
         </td>
         <td><strong>${BudgetStore.formatWon(balance)}</strong></td>
@@ -324,6 +334,7 @@ els.form.addEventListener("submit", (event) => {
     name: els.name.value.trim(),
     total: BudgetStore.numberValue(els.total.value),
     requiredMonthly: BudgetStore.numberValue(els.required.value),
+    budgetCategory: els.budgetCategory.value || (els.kind.value === "debt" ? "obligation" : "need"),
     startMonth: els.startMonth.value || currentMonth(),
     dueDate: els.dueDate.value,
   };
@@ -345,6 +356,11 @@ els.form.addEventListener("submit", (event) => {
 });
 
 els.cancelEdit.addEventListener("click", resetPlanForm);
+
+els.kind.addEventListener("change", () => {
+  if (state.editingPlanId) return;
+  els.budgetCategory.value = els.kind.value === "debt" ? "obligation" : "need";
+});
 
 els.deletePlan.addEventListener("click", () => {
   if (isLocked() || !state.editingPlanId) return;
@@ -372,6 +388,10 @@ els.list.addEventListener("change", (event) => {
 
   if (event.target.classList.contains("month-paid-input")) {
     record.amount = BudgetStore.numberValue(event.target.value);
+  }
+
+  if (event.target.classList.contains("budget-include-input")) {
+    record.includeInBudget = event.target.checked;
   }
 
   savePlans();

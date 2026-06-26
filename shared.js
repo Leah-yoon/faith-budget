@@ -326,12 +326,13 @@ const BudgetStore = (() => {
   }
 
   function getDebtCategory(plan) {
-    return plan.kind === "debt" ? "obligation" : "need";
+    const fallback = plan.kind === "debt" ? "obligation" : "need";
+    return categories.some((category) => category.id === plan.budgetCategory) ? plan.budgetCategory : fallback;
   }
 
   function getDebtRecord(plan, month) {
     const records = plan.records || {};
-    return records[month] || { requiredPaid: false, requiredAmount: plan.requiredMonthly || 0, amount: 0 };
+    return records[month] || { requiredPaid: false, requiredAmount: plan.requiredMonthly || 0, amount: 0, includeInBudget: true };
   }
 
   function getDebtItemName(plan) {
@@ -398,6 +399,12 @@ const BudgetStore = (() => {
       const amount = numberValue(record.amount);
       const interestName = `${itemName} 이자`;
       const interestBudget = existingAutoBudgets.has(`${plan.id}:interest`) ? existingAutoBudgets.get(`${plan.id}:interest`) : numberValue(plan.requiredMonthly);
+      const includeInBudget = record.includeInBudget !== false;
+
+      if (!includeInBudget) {
+        data.expenses = data.expenses.filter((expense) => !(expense.autoDebtPlanId === plan.id && expense.autoDebtMonth === month));
+        return;
+      }
 
       upsertAutoBudgetItem(
         data.items[category],
