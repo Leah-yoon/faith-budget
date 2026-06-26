@@ -3,6 +3,7 @@ const state = {
   data: null,
   isEditingBudget: false,
   draggingItem: null,
+  expandedItemKey: "",
 };
 
 const els = {
@@ -131,6 +132,7 @@ function renderBoard() {
 }
 
 function renderViewRow(category, item) {
+  const itemKey = `${category.id}:${item.id}`;
   const autoSpent = item.autoDebtPlanId
     ? (state.data.expenses || [])
         .filter((expense) => expense.autoDebtPlanId === item.autoDebtPlanId && (expense.autoDebtType || "principal") === item.autoDebtType)
@@ -143,12 +145,54 @@ function renderViewRow(category, item) {
   const autoLabel = item.autoDebtPlanId || item.autoTitheType ? `<small class="auto-item-label">자동</small>` : "";
   const titheButton = item.autoTitheType === "extra" ? renderTitheRateButton() : "";
   const savingLabel = item.isSaving ? `<small class="saving-item-label">저축</small>` : "";
+  const isExpanded = state.expandedItemKey === itemKey;
 
   return `
-    <div class="table-row item-view-row" data-category="${category.id}" data-id="${item.id}">
+    <div class="table-row item-view-row ${isExpanded ? "is-expanded" : ""}" data-category="${category.id}" data-id="${item.id}" data-item-key="${itemKey}">
       <strong>${BudgetStore.escapeHtml(item.name || "이름 없는 항목")}${autoLabel}${savingLabel}${titheButton}</strong>
       <span>${budgetText}</span>
       <span class="${isOverBudget ? "over-budget" : ""}">${spentText}</span>
+    </div>
+    ${isExpanded ? renderItemExpenseDetails(category, item) : ""}
+  `;
+}
+
+function getItemExpenseRows(category, item) {
+  return (state.data.expenses || [])
+    .filter((expense) => {
+      if (item.autoDebtPlanId) {
+        return expense.autoDebtPlanId === item.autoDebtPlanId && (expense.autoDebtType || "principal") === item.autoDebtType;
+      }
+      return expense.category === category.id && expense.itemName === item.name;
+    })
+    .sort((a, b) => `${b.date}${b.id}`.localeCompare(`${a.date}${a.id}`));
+}
+
+function renderItemExpenseDetails(category, item) {
+  const rows = getItemExpenseRows(category, item);
+  const total = rows.reduce((sum, expense) => sum + BudgetStore.numberValue(expense.amount), 0);
+  const content =
+    rows.length === 0
+      ? `<p class="item-expense-empty">아직 이 항목에 기록된 지출이 없어요.</p>`
+      : rows
+          .map(
+            (expense) => `
+              <div class="item-expense-row">
+                <span>${BudgetStore.escapeHtml(expense.date || "")}</span>
+                <strong>${BudgetStore.formatWon(expense.amount)}</strong>
+                <small>${BudgetStore.escapeHtml(expense.memo || expense.itemName || "")}</small>
+              </div>
+            `,
+          )
+          .join("");
+
+  return `
+    <div class="item-expense-details" data-category="${category.id}" data-id="${item.id}">
+      <div class="item-expense-head">
+        <strong>지출 내역</strong>
+        <span>${rows.length}건 · ${BudgetStore.formatWon(total)}</span>
+      </div>
+      ${content}
     </div>
   `;
 }
@@ -275,6 +319,7 @@ function bindEvents() {
   els.toggleBudgetEdit.addEventListener("click", () => {
     if (isLocked()) return;
     state.isEditingBudget = !state.isEditingBudget;
+    state.expandedItemKey = "";
     save(state.isEditingBudget ? "예산 수정 중" : "예산 저장됨");
     if (!state.isEditingBudget) syncBudget();
     render();
@@ -303,8 +348,16 @@ function bindEvents() {
       return;
     }
 
+    if (!state.isEditingBudget) {
+      const viewRow = event.target.closest(".item-view-row");
+      if (!viewRow || event.target.closest("button")) return;
+      state.expandedItemKey = state.expandedItemKey === viewRow.dataset.itemKey ? "" : viewRow.dataset.itemKey;
+      renderBoard();
+      return;
+    }
+
     const categoryCard = event.target.closest(".category-card");
-    if (!categoryCard || !state.isEditingBudget) return;
+    if (!categoryCard) return;
     const categoryId = categoryCard.dataset.category;
 
     if (event.target.classList.contains("add-item-button")) {
